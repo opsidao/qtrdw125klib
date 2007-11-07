@@ -59,7 +59,11 @@ class KRW125ctl : public QextSerialPort
 		void getFirmwareVersion();
 		void readPublicModeA();
 		void writePublicModeA();
-		
+	protected slots:
+		void _testNodelLink();
+		void _getFirmwareVersion();
+		void _readPublicModeA();
+		void _writePublicModeA();
 	signals:
 		void testNodeLinkDone(KRW125ctl::OperationResult result);
 		void getFirmwareVersionDone(bool correct, QPair<char,char> version );
