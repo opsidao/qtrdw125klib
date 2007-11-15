@@ -51,6 +51,8 @@ class Ventana : public QMainWindow, private Ui::MainWindow
 		void slotReadPublicMode();
 		void slotReadPublicModeDone(KRW125ctl::OperationResult correct, const QString &hexData, const QString &decData);
 		void slotLockChanged(bool lock);
+		void slotWritePublicMode();
+		void slotWritePublicModeDone(KRW125ctl::OperationResult correct);
 };
 
 #endif

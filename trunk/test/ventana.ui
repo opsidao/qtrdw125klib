@@ -36,6 +36,9 @@
     </item>
     <item row="1" column="0" colspan="3" >
      <widget class="QFrame" name="framePadre" >
+      <property name="enabled" >
+       <bool>false</bool>
+      </property>
       <property name="frameShape" >
        <enum>QFrame::StyledPanel</enum>
       </property>
