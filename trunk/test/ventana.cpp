@@ -1,4 +1,4 @@
-/***************************************************************************
+  /***************************************************************************
  *   Copyright (C) 2007 by Opsidao,,,   *
  *   opsi@ka-tet   *
  *                                                                         *
@@ -53,8 +53,8 @@ Ventana::Ventana(QWidget* parent, Qt::WFlags fl)
 	
 	QObject::connect(botonVersion,SIGNAL(clicked()),
 			 this,SLOT(slotGetFirmwareVersion()));
-	QObject::connect(&control,SIGNAL(getFirmwareVersionDone(bool, QPair< char, char >)),
-			 this,SLOT(slotGetFirmwareVersionDone(bool, QPair< char, char >)));
+	QObject::connect(&control,SIGNAL(getFirmwareVersionDone(bool, QPair< int, int>)),
+			 this,SLOT(slotGetFirmwareVersionDone(bool, QPair< int, int>)));
 	
 	QObject::connect(botonLeerTarjeta,SIGNAL(clicked()),
 			 this,SLOT(slotReadPublicMode()));
@@ -110,7 +110,7 @@ void Ventana::slotAbrirPuerto()
 			control.setDataBits(QextSerialPort::DATA_8);
 			control.setParity(QextSerialPort::PAR_NONE);
 			control.setStopBits(QextSerialPort::STOP_1);
-			control.setTimeout(2,0);
+			control.setTimeout(0,500);
 		} else {
 			msg = "Imposible abrir puerto";
 			puerto->setEnabled(true);
@@ -137,12 +137,14 @@ void Ventana::slotTestNodeLinkDone(KRW125ctl::OperationResult result)
 	{
 		case KRW125ctl::Ok:
 			statusBar()->showMessage("Test del nodo correcto",0);
+			progresoTest->setValue(1);
 			msg = "Test correcto";
 			break;
 		case KRW125ctl::Failed:
 		case KRW125ctl::NotOpen:
 		case KRW125ctl::OperationError:
 			statusBar()->showMessage("Ha fallado el test del nodo",0);
+			progresoTest->setValue(0);
 			msg = "Test incorrecto";
 	}
 	progresoTest->setFormat(msg);
@@ -154,7 +156,7 @@ void Ventana::slotGetFirmwareVersion()
 	QTimer::singleShot(0,&control,SLOT(getFirmwareVersion()));
 }
 
-void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< char, char > version)
+void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int> version)
 {
 	framePadre->setEnabled(true);
 	if (correct) {

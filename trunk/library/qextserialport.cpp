@@ -15,11 +15,11 @@ QESP_LOGTRACE("Constructor("+name.toAscii()+")")
 	setName( name );
 	//setType( IO_Sequential );
 
-	Settings.BaudRate = QextSerialPort::BAUD115200;
+	Settings.BaudRate = QextSerialPort::BAUD9600;
 	Settings.DataBits = QextSerialPort::DATA_8;
 	Settings.Parity = QextSerialPort::PAR_NONE;
 	Settings.StopBits = QextSerialPort::STOP_1;
-	Settings.FlowControl = QextSerialPort::FLOW_HARDWARE;
+	Settings.FlowControl = QextSerialPort::FLOW_OFF;
 	Settings.Timeout_Sec = 0;
 	Settings.Timeout_Millisec = 500;
 

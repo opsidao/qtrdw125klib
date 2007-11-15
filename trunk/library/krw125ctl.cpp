@@ -21,6 +21,7 @@
 #include "krw125ctl.h"
 #include <QTimer>
 #include <QDebug>
+#include <QMessageBox>
 
 KRW125ctl::KRW125ctl(QObject *parent)
 	: QextSerialPort("",parent),m_cardType(V0),m_data(QString()),m_lock(false)
@@ -93,22 +94,44 @@ void KRW125ctl::writePublicModeA()
 
 QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByteArray data, bool lockCard)
 {
-	//<STX><APID> <OPC><NA><ARG><CRC><ETX>
 	QByteArray out;
+	//<STX><APID> <OPC><NA><ARG><CRC><ETX>
+
 	out.append((char)0x02); //STX
-	out.append((char)0x01); //APID, nodo 1 del concentrador
+	out.append('0'); //APID, nodo 1 del concentrador
+	out.append('1');
 	switch (frameType) {
 		case TestLink:
-			out.append((char)0x10);//OPC
-			out.append((char)0x00);//NA
+			out.append('0');//OPC
+			out.append('0');
+			out.append('0');//NA
+			out.append('0');
+			out.append('2');//CRC
+			out.append('1');			
+			break;
+		case TestLinkAnswer:
+			out.append('8');//OPC
+			out.append('0');
+			out.append('0');//NA
+			out.append('0');
+			out.append('2');//CRC
+			out.append('9');			
 			break;
 		case GetFirmwareVersion:
-			out.append((char)0x11);//OPC
-			out.append((char)0x00);//NA
+			out.append('1');//OPC
+			out.append('1');
+			out.append('0');//NA
+			out.append('0');
+			out.append('2');//CRC
+			out.append('3');			
 			break;
 		case Read125:
-			out.append((char)0x12);//OPC
-			out.append((char)0x00);//NA
+			out.append('0');//OPC
+			out.append('1');
+			out.append('0');//NA
+			out.append('0');
+			out.append('2');//CRC
+			out.append('2');		
 			break;
 		case Write125:
 			Q_ASSERT(data.size()==5);
@@ -123,13 +146,7 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 			out.append(data);
 			break;
 	}
-	//Calculate CRC
-	char crc = 0;
-	for (int i = 1; i < out.size();i++) {
-		crc = (crc+out.at(i))%255;
-	}
-	out.append(crc);
-	out.append((char)0x03);//ETX
+	out.append((char)0x03);
 	return out;
 }
 
@@ -143,7 +160,9 @@ bool KRW125ctl::checkFrameCRC(QByteArray frame)
 	for (int i = 1; i < frame.size()-2;i++) {
 		crc = (crc+frame.at(i))%255;
 	}
-	return crc == frame.at(frame.size()-1);
+	QString crcSt = QString::number(crc-12);
+	qDebug() <<"Checked crc " << crcSt;
+	return frame.indexOf(crcSt)==(frame.size()-3);
 }
 
 // void KRW125ctl::setTimeout(int timeout)
@@ -161,21 +180,11 @@ void KRW125ctl::_testNodelLink()
 	if (!isOpen()) {
 		emit testNodeLinkDone(NotOpen);
 	}else {
-		QByteArray frame = generateFrame(TestLink);
-		qDebug() << "Frame a escribir : ";
-		for (int i=0; i < frame.size();i++)
-		{
-			qDebug() << (int)frame[i];
-		}
+		QByteArray frame = generateFrame(TestLink),exp=generateFrame(TestLinkAnswer);
 		write(frame);
 		flush();
-		frame = read(10);
-		qDebug("Frame leido : ");
-		for (int i=0; i < frame.size();i++)
-		{
-			qDebug() << (int)frame[i];
-		}
-		if (frame.size()==6 && checkFrameCRC(frame)) {
+		frame=read(exp.size());
+		if (frame == exp) {
 			emit testNodeLinkDone(Ok);
 		} else {
 			emit testNodeLinkDone(Failed);
@@ -185,15 +194,23 @@ void KRW125ctl::_testNodelLink()
 
 void KRW125ctl::_getFirmwareVersion()
 {
-	QPair<char,char> out;
+	QPair<int,int> out;
 	if (isOpen()) {
 		QByteArray frame = generateFrame(GetFirmwareVersion);
 		write(frame);
 		
-		frame = read(8);
-		if (frame.size() == 8 && checkFrameCRC(frame)) {
-			out.first = frame.at(4);
-			out.second = frame.at(5);
+		frame=read(14);
+		QByteArray answerPrefix("019102");
+		answerPrefix.prepend((char)0x02);
+		if (frame.startsWith(answerPrefix)) {
+			qDebug()<<"Answer prefix OK :";
+			QString num(2);
+			num[0] = frame.at(7);
+			num[1] = frame.at(8);
+			out.first = num.toInt();
+			num[0] = frame.at(9);
+			num[1] = frame.at(10);
+			out.second = num.toInt();
 			emit getFirmwareVersionDone(true,out);
 		} else {
 			emit getFirmwareVersionDone(false,out);

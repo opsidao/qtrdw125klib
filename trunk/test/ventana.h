@@ -47,7 +47,7 @@ class Ventana : public QMainWindow, private Ui::MainWindow
 		void slotTestNodeLink();
 		void slotTestNodeLinkDone(KRW125ctl::OperationResult result);
 		void slotGetFirmwareVersion();
-		void slotGetFirmwareVersionDone(bool correct, QPair<char,char> version);
+		void slotGetFirmwareVersionDone(bool correct, QPair<int,int> version);
 		void slotReadPublicMode();
 		void slotReadPublicModeDone(KRW125ctl::OperationResult correct, const QString &hexData, const QString &decData);
 		void slotLockChanged(bool lock);
