@@ -20,10 +20,12 @@
 
 #include "krw125ctl.h"
 #include <QTimer>
+#include <QDebug>
 
 KRW125ctl::KRW125ctl(QObject *parent)
-	: QextSerialPort("",parent),m_timeout(5000),m_cardType(V0),m_data(QString()),m_lock(false)
+	: QextSerialPort("",parent),m_cardType(V0),m_data(QString()),m_lock(false)
 {
+	QObject::connect(this,SIGNAL(readyRead()),this,SLOT(readyReadSlot()));
 }
 
 
@@ -133,6 +135,7 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 
 bool KRW125ctl::checkFrameCRC(QByteArray frame)
 {
+	qDebug() << "Checking answer's CRC";
 	if (frame.size() < 6) {
 		return false;
 	}
@@ -143,15 +146,15 @@ bool KRW125ctl::checkFrameCRC(QByteArray frame)
 	return crc == frame.at(frame.size()-1);
 }
 
-void KRW125ctl::setTimeout(int timeout)
-{
-	m_timeout = timeout;
-}
-
-int KRW125ctl::timeout()
-{
-	return m_timeout;
-}
+// void KRW125ctl::setTimeout(int timeout)
+// {
+// 	m_timeout = timeout;
+// }
+// 
+// int KRW125ctl::timeout()
+// {
+// 	return m_timeout;
+// }
 
 void KRW125ctl::_testNodelLink()
 {
@@ -159,9 +162,19 @@ void KRW125ctl::_testNodelLink()
 		emit testNodeLinkDone(NotOpen);
 	}else {
 		QByteArray frame = generateFrame(TestLink);
+		qDebug() << "Frame a escribir : ";
+		for (int i=0; i < frame.size();i++)
+		{
+			qDebug() << (int)frame[i];
+		}
 		write(frame);
-		waitForReadyRead(m_timeout);
-		frame = readAll();
+		flush();
+		frame = read(10);
+		qDebug("Frame leido : ");
+		for (int i=0; i < frame.size();i++)
+		{
+			qDebug() << (int)frame[i];
+		}
 		if (frame.size()==6 && checkFrameCRC(frame)) {
 			emit testNodeLinkDone(Ok);
 		} else {
@@ -176,7 +189,7 @@ void KRW125ctl::_getFirmwareVersion()
 	if (isOpen()) {
 		QByteArray frame = generateFrame(GetFirmwareVersion);
 		write(frame);
-		waitForReadyRead(m_timeout);
+		
 		frame = read(8);
 		if (frame.size() == 8 && checkFrameCRC(frame)) {
 			out.first = frame.at(4);
@@ -197,7 +210,7 @@ void KRW125ctl::_readPublicModeA()
 	} else {
 		QByteArray frame = generateFrame(Read125);
 		write(frame);
-		waitForReadyRead(m_timeout);
+		
 		frame = read(12);
 		if (frame.size() >= 6 && checkFrameCRC(frame)) {
 			if (frame.at(3) == 0x00) {
@@ -227,7 +240,7 @@ void KRW125ctl::_writePublicModeA()
 		Q_ASSERT(m_data.size() == 10);
 		QByteArray frame = generateFrame(Write125,m_cardType,m_data.toAscii(),m_lock);
 		write(frame);
-		waitForReadyRead(m_timeout);
+		
 		frame = read(7);
 		if (frame.size()==7 && checkFrameCRC(frame)) {
 			if (frame.at(4) == 0x00	) {
@@ -239,6 +252,11 @@ void KRW125ctl::_writePublicModeA()
 			emit writePublicModeDone(OperationError);
 		}
 	}
+}
+
+void KRW125ctl::readyReadSlot()
+{
+	qDebug() << "Read ready";
 }
 
 

@@ -28,10 +28,10 @@
 class KRW125ctl : public QextSerialPort
 {
 	Q_OBJECT
-	Q_ENUMS(CardType)
-	Q_PROPERTY(int timeout READ timeout WRITE setTimeout)
+	Q_ENUMS(CardType)	
 	Q_PROPERTY(QString data READ data WRITE setData)
 	Q_PROPERTY(bool lockCard READ lockCard WRITE setLockCard)
+
 	public:
 		enum OpenPortResult {PortOpened, PortAlreadyOpened, OpenError};
 		enum OperationResult {Ok,Failed,NotOpen,OperationError};
@@ -43,8 +43,8 @@ class KRW125ctl : public QextSerialPort
 		
 		virtual void close();
 		
-		void setTimeout(int timeout);
-		int timeout();
+// 		void setTimeout(int timeout);
+// 		int timeout();
 		
 		void setCardType(CardType cardType);
 		CardType cardType();
@@ -64,6 +64,7 @@ class KRW125ctl : public QextSerialPort
 		void _getFirmwareVersion();
 		void _readPublicModeA();
 		void _writePublicModeA();
+		void readyReadSlot();
 	signals:
 		void testNodeLinkDone(KRW125ctl::OperationResult result);
 		void getFirmwareVersionDone(bool correct, QPair<char,char> version );
@@ -78,7 +79,7 @@ class KRW125ctl : public QextSerialPort
 		
 		bool checkFrameCRC(QByteArray frame);
 		
-		int m_timeout;
+// 		int m_timeout;
 		CardType m_cardType;
 		QString m_data;
 		bool m_lock;

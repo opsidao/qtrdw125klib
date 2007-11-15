@@ -106,6 +106,11 @@ void Ventana::slotAbrirPuerto()
 			botonAbrirPuerto->setText("&Cerrar puerto");
 			puerto->setEnabled(false);
 			framePadre->setEnabled(true);
+			control.setBaudRate(QextSerialPort::BAUD9600);
+			control.setDataBits(QextSerialPort::DATA_8);
+			control.setParity(QextSerialPort::PAR_NONE);
+			control.setStopBits(QextSerialPort::STOP_1);
+			control.setTimeout(2,0);
 		} else {
 			msg = "Imposible abrir puerto";
 			puerto->setEnabled(true);
@@ -199,6 +204,16 @@ void Ventana::slotLockChanged(bool lock)
 	} else {
 		control.setLockCard(lock);
 	}
+}
+
+void Ventana::slotWritePublicMode()
+{
+	control.setData(QByteArray::fromHex(paraEscribir->text().toAscii()));
+	
+}
+
+void Ventana::slotWritePublicModeDone(KRW125ctl::OperationResult correct)
+{
 }
 
 

@@ -265,8 +265,7 @@ QESP_LOGTRACE("QIODevice::peek(maxlen)")
 
 bool QextSerialPort::waitForReadyRead( int msecs )
 {
-QESP_LOGTRACE("QIODevice::waitForReadyRead(msecs)")
-
+QESP_LOGTRACE("QIODevice::waitForReadyRead(msecs)")	
 	return QIODevice::waitForReadyRead( msecs );
 }
 
