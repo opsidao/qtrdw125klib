@@ -67,13 +67,13 @@ class KRW125ctl : public QextSerialPort
 		void readyReadSlot();
 	signals:
 		void testNodeLinkDone(KRW125ctl::OperationResult result);
-		void getFirmwareVersionDone(bool correct, QPair<char,char> version );
+		void getFirmwareVersionDone(bool correct, QPair<int,int> version );
 		void readPublicModeDone(KRW125ctl::OperationResult correct, const QString &hexData = QString(), const QString &decData =QString());
 		void writePublicModeDone(KRW125ctl::OperationResult correct);
 		void nodeTimeout();
 		
 	protected:
-		enum FrameType {TestLink,GetFirmwareVersion,Read125,Write125};
+		enum FrameType {TestLink,TestLinkAnswer,GetFirmwareVersion,Read125,Write125};
 		
 		QByteArray generateFrame(FrameType frameType, CardType cardType=V0, QByteArray data = QByteArray(),  bool lockCard = false);
 		
