@@ -28,7 +28,7 @@ KRW125ctl::KRW125ctl(QObject *parent)
 	: QThread(parent),m_cardType(V0),m_data(QString()),m_lock(false)
 {	
 	qRegisterMetaType<KRW125ctl::OperationResult>("KRW125ctl::OpenPortResult");
-	qRegisterMetaType<QPair<char,char> >("QPair<char,char>");
+	qRegisterMetaType<QPair<int,int> >("QPair<int,int>");
 }
 
 
