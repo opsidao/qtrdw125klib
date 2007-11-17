@@ -14,7 +14,6 @@ QESP_LOGTRACE("Constructor("+name.toAscii()+")")
 
 	setName( name );
 	//setType( IO_Sequential );
-
 	Settings.BaudRate = QextSerialPort::BAUD9600;
 	Settings.DataBits = QextSerialPort::DATA_8;
 	Settings.Parity = QextSerialPort::PAR_NONE;

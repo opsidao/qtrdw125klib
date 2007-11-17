@@ -22,56 +22,64 @@
 
 #include <QObject>
 #include <QPair>
+#include <QThread>
+#include <QMutex>
+#include <QQueue>
 
 #include "qextserialport.h"
 
-class KRW125ctl : public QextSerialPort
+class KRW125ctl : public QThread
 {
 	Q_OBJECT
-	Q_ENUMS(CardType)	
+	Q_ENUMS(CardType)
+	Q_ENUMS(OperationResult)
 	Q_PROPERTY(QString data READ data WRITE setData)
 	Q_PROPERTY(bool lockCard READ lockCard WRITE setLockCard)
 
 	public:
-		enum OpenPortResult {PortOpened, PortAlreadyOpened, OpenError};
 		enum OperationResult {Ok,Failed,NotOpen,OperationError};
 		
 		enum CardType {V0=0x00, V1=0x01};
 
 		KRW125ctl(QObject *parent = 0);
 		~KRW125ctl();
-		
-		virtual void close();
-		
-// 		void setTimeout(int timeout);
-// 		int timeout();
-		
+
+		void close();
+
 		void setCardType(CardType cardType);
 		CardType cardType();
-		
+
 		void setData(const QString &data);
 		QString data();
-		
+
 		void setLockCard(bool lock);
 		bool lockCard();
+
+		bool open();
+		bool isOpen();
+		void setName(QString newName);
+		void run();
+
 	public slots:
-		void testNodelLink();
+		void testNodeLink();
 		void getFirmwareVersion();
 		void readPublicModeA();
 		void writePublicModeA();
+
 	protected slots:
 		void _testNodelLink();
 		void _getFirmwareVersion();
 		void _readPublicModeA();
 		void _writePublicModeA();
 		void readyReadSlot();
+
 	signals:
-		void testNodeLinkDone(KRW125ctl::OperationResult result);
+		void testNodeLinkDone(int result);
 		void getFirmwareVersionDone(bool correct, QPair<int,int> version );
-		void readPublicModeDone(KRW125ctl::OperationResult correct, const QString &hexData = QString(), const QString &decData =QString());
-		void writePublicModeDone(KRW125ctl::OperationResult correct);
+		void readPublicModeDone(int correct, const QString &hexData = QString(), const QString &decData =QString());
+		void writePublicModeDone(int correct);
 		void nodeTimeout();
-		
+
 	protected:
 		enum FrameType {TestLink,TestLinkAnswer,GetFirmwareVersion,Read125,Write125};
 		
@@ -79,7 +87,9 @@ class KRW125ctl : public QextSerialPort
 		
 		bool checkFrameCRC(QByteArray frame);
 		
-// 		int m_timeout;
+		QQueue<FrameType> requestQueue;
+		QMutex listMutex;
+		QextSerialPort port;
 		CardType m_cardType;
 		QString m_data;
 		bool m_lock;

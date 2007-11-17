@@ -45,14 +45,15 @@ class Ventana : public QMainWindow, private Ui::MainWindow
 		void slotUpdateCardType(const QString&);
 		void slotAbrirPuerto();
 		void slotTestNodeLink();
-		void slotTestNodeLinkDone(KRW125ctl::OperationResult result);
+		void slotTestNodeLinkDone(int result);
 		void slotGetFirmwareVersion();
 		void slotGetFirmwareVersionDone(bool correct, QPair<int,int> version);
 		void slotReadPublicMode();
-		void slotReadPublicModeDone(KRW125ctl::OperationResult correct, const QString &hexData, const QString &decData);
+		void slotReadPublicModeDone(int correct, const QString &hexData, const QString &decData);
 		void slotLockChanged(bool lock);
+		void validateData2Write(const QString&);
 		void slotWritePublicMode();
-		void slotWritePublicModeDone(KRW125ctl::OperationResult correct);
+		void slotWritePublicModeDone(int correct);
 };
 
 #endif
