@@ -136,7 +136,8 @@ void Ventana::slotTestNodeLinkDone(int result)
 {
 	framePadre->setEnabled(true);
 	botonAbrirPuerto->setEnabled(true);
-	feedbackBar->setMaximum(1);	
+	feedbackBar->setMaximum(1);
+	feedbackBar->setValue(1);
 	QString msg;
 	switch(result)
 	{
@@ -164,6 +165,7 @@ void Ventana::slotGetFirmwareVersion()
 void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int > version)
 {
 	feedbackBar->setMaximum(1);
+	feedbackBar->setValue(1);
 	framePadre->setEnabled(true);
 	if (correct) {
 		statusBar()->showMessage(QString::fromUtf8("Versión del firmware obtenida correctamente"),0);
@@ -188,6 +190,7 @@ void Ventana::slotReadPublicMode()
 void Ventana::slotReadPublicModeDone(int correct, const QString & hexData, const QString & decData)
 {
 	feedbackBar->setMaximum(1);
+	feedbackBar->setValue(1);
 	framePadre->setEnabled(true);
 	botonAbrirPuerto->setEnabled(true);
 	switch(correct)
@@ -230,6 +233,7 @@ void Ventana::slotWritePublicMode()
 void Ventana::slotWritePublicModeDone(int correct)
 {
 	feedbackBar->setMaximum(1);
+	feedbackBar->setValue(1);
 	framePadre->setEnabled(true);
 	botonAbrirPuerto->setEnabled(true);
 	switch(correct)
