@@ -1,4 +1,4 @@
-  /***************************************************************************
+/***************************************************************************
  *   Copyright (C) 2007 by Opsidao,,,   *
  *   opsi@ka-tet   *
  *                                                                         *
@@ -23,11 +23,13 @@
 #include <QTimer>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QDebug>
 
 Ventana::Ventana(QWidget* parent, Qt::WFlags fl)
 : QMainWindow( parent, fl )
 {
 	setupUi(this);
+	control.start();
 	//TODO Enumerate ports more cleanly, with really available ports
 	QStringList puertos;
 #ifdef Q_WS_WIN
@@ -48,20 +50,27 @@ Ventana::Ventana(QWidget* parent, Qt::WFlags fl)
 	
 	QObject::connect(botonTestNodo,SIGNAL(clicked()),
 			 this,SLOT(slotTestNodeLink()));
-	QObject::connect(&control,SIGNAL(testNodeLinkDone(KRW125ctl::OperationResult)),
-			 this,SLOT(slotTestNodeLinkDone(KRW125ctl::OperationResult)));
+	QObject::connect(&control,SIGNAL(testNodeLinkDone(int)),
+			 this,SLOT(slotTestNodeLinkDone(int)));
 	
 	QObject::connect(botonVersion,SIGNAL(clicked()),
 			 this,SLOT(slotGetFirmwareVersion()));
-	QObject::connect(&control,SIGNAL(getFirmwareVersionDone(bool, QPair< int, int>)),
-			 this,SLOT(slotGetFirmwareVersionDone(bool, QPair< int, int>)));
+	QObject::connect(&control,SIGNAL(getFirmwareVersionDone(bool, QPair< int, int >)),
+			 this,SLOT(slotGetFirmwareVersionDone(bool, QPair< int, int >)));
 	
 	QObject::connect(botonLeerTarjeta,SIGNAL(clicked()),
 			 this,SLOT(slotReadPublicMode()));
-	QObject::connect(&control,SIGNAL(readPublicModeDone(KRW125ctl::OperationResult, const QString&, const QString&)),
-			 this,SLOT(slotReadPublicModeDone(KRW125ctl::OperationResult, const QString&, const QString&)));
+	QObject::connect(&control,SIGNAL(readPublicModeDone(int, const QString&, const QString&)),
+			 this,SLOT(slotReadPublicModeDone(int, const QString&, const QString&)));
 	
 	QObject::connect(bloquearTarjeta,SIGNAL(toggled(bool)),this,SLOT(slotLockChanged(bool )));
+	
+	QObject::connect(paraEscribir,SIGNAL(textChanged( const QString& )),this,SLOT(validateData2Write(const QString&)));
+	
+	QObject::connect(botonEscribirTarjeta,SIGNAL(clicked()),
+			 this,SLOT(slotWritePublicMode()));
+	QObject::connect(&control,SIGNAL(writePublicModeDone(int)),
+			  this,SLOT(slotWritePublicModeDone(int)));
 }
 
 Ventana::~Ventana()
@@ -106,11 +115,6 @@ void Ventana::slotAbrirPuerto()
 			botonAbrirPuerto->setText("&Cerrar puerto");
 			puerto->setEnabled(false);
 			framePadre->setEnabled(true);
-			control.setBaudRate(QextSerialPort::BAUD9600);
-			control.setDataBits(QextSerialPort::DATA_8);
-			control.setParity(QextSerialPort::PAR_NONE);
-			control.setStopBits(QextSerialPort::STOP_1);
-			control.setTimeout(0,500);
 		} else {
 			msg = "Imposible abrir puerto";
 			puerto->setEnabled(true);
@@ -122,42 +126,44 @@ void Ventana::slotAbrirPuerto()
 
 void Ventana::slotTestNodeLink()
 {
-	progresoTest->setMaximum(0);
+	feedbackBar->setMaximum(0);
 	framePadre->setEnabled(false);
-	QTimer::singleShot(0,&control,SLOT(testNodelLink()));
+	botonAbrirPuerto->setEnabled(false);
+	control.testNodeLink();
 }
 
-void Ventana::slotTestNodeLinkDone(KRW125ctl::OperationResult result)
+void Ventana::slotTestNodeLinkDone(int result)
 {
 	framePadre->setEnabled(true);
 	botonAbrirPuerto->setEnabled(true);
-	progresoTest->setMaximum(1);	
+	feedbackBar->setMaximum(1);	
 	QString msg;
 	switch(result)
 	{
 		case KRW125ctl::Ok:
 			statusBar()->showMessage("Test del nodo correcto",0);
-			progresoTest->setValue(1);
 			msg = "Test correcto";
 			break;
 		case KRW125ctl::Failed:
 		case KRW125ctl::NotOpen:
 		case KRW125ctl::OperationError:
 			statusBar()->showMessage("Ha fallado el test del nodo",0);
-			progresoTest->setValue(0);
 			msg = "Test incorrecto";
 	}
-	progresoTest->setFormat(msg);
+	resultadoTest->setText(msg);
 }
 
 void Ventana::slotGetFirmwareVersion()
 {
-	framePadre->setEnabled(false);
-	QTimer::singleShot(0,&control,SLOT(getFirmwareVersion()));
+	feedbackBar->setMaximum(0);
+	framePadre->setEnabled(false);	
+	botonAbrirPuerto->setEnabled(false);
+	control.getFirmwareVersion();
 }
 
-void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int> version)
+void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int > version)
 {
+	feedbackBar->setMaximum(1);
 	framePadre->setEnabled(true);
 	if (correct) {
 		statusBar()->showMessage(QString::fromUtf8("Versión del firmware obtenida correctamente"),0);
@@ -173,13 +179,17 @@ void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int> version)
 
 void Ventana::slotReadPublicMode()
 {
+	feedbackBar->setMaximum(0);
 	framePadre->setEnabled(false);
-	QTimer::singleShot(0,&control,SLOT(readPublicModeA()));
+	botonAbrirPuerto->setEnabled(false);
+	control.readPublicModeA();
 }
 
-void Ventana::slotReadPublicModeDone(KRW125ctl::OperationResult correct, const QString & hexData, const QString & decData)
+void Ventana::slotReadPublicModeDone(int correct, const QString & hexData, const QString & decData)
 {
+	feedbackBar->setMaximum(1);
 	framePadre->setEnabled(true);
+	botonAbrirPuerto->setEnabled(true);
 	switch(correct)
 	{
 		case KRW125ctl::Ok:
@@ -210,12 +220,39 @@ void Ventana::slotLockChanged(bool lock)
 
 void Ventana::slotWritePublicMode()
 {
+	feedbackBar->setMaximum(0);
+	framePadre->setEnabled(false);
+	botonAbrirPuerto->setEnabled(false);
 	control.setData(QByteArray::fromHex(paraEscribir->text().toAscii()));
-	
+	control.writePublicModeA();	
 }
 
-void Ventana::slotWritePublicModeDone(KRW125ctl::OperationResult correct)
+void Ventana::slotWritePublicModeDone(int correct)
 {
+	feedbackBar->setMaximum(1);
+	framePadre->setEnabled(true);
+	botonAbrirPuerto->setEnabled(true);
+	switch(correct)
+	{
+		case KRW125ctl::Ok:
+			statusBar()->showMessage("Tarjeta escrita correctamente",0);
+			break;
+		default:
+			statusBar()->showMessage("No se pudo escribir la tarjeta",0);
+			break;
+	}
+}
+
+void Ventana::validateData2Write(const QString &newText)
+{
+	QRegExp reg("[0-9aAbBcCdDeEfF]{10}");
+	if (reg.exactMatch(newText)) {
+		wrongData2Write->setVisible(false);
+		botonEscribirTarjeta->setEnabled(true);
+	} else {
+		wrongData2Write->setVisible(true);
+		botonEscribirTarjeta->setEnabled(false);
+	}
 }
 
 

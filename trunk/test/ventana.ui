@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>478</height>
+    <width>525</width>
+    <height>487</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -16,6 +16,12 @@
    <layout class="QGridLayout" >
     <item row="0" column="0" >
      <widget class="QLabel" name="label" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Preferred" hsizetype="Minimum" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text" >
        <string>Puerto &amp;serie:</string>
       </property>
@@ -25,7 +31,14 @@
      </widget>
     </item>
     <item row="0" column="1" >
-     <widget class="QComboBox" name="puerto" />
+     <widget class="QComboBox" name="puerto" >
+      <property name="sizePolicy" >
+       <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
     </item>
     <item row="0" column="2" >
      <widget class="QPushButton" name="botonAbrirPuerto" >
@@ -35,6 +48,19 @@
      </widget>
     </item>
     <item row="1" column="0" colspan="3" >
+     <widget class="QProgressBar" name="feedbackBar" >
+      <property name="maximum" >
+       <number>1</number>
+      </property>
+      <property name="value" >
+       <number>0</number>
+      </property>
+      <property name="format" >
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3" >
      <widget class="QFrame" name="framePadre" >
       <property name="enabled" >
        <bool>false</bool>
@@ -52,23 +78,10 @@
           <string>Información dispositivo</string>
          </property>
          <layout class="QGridLayout" >
-          <item row="0" column="0" >
+          <item row="0" column="0" colspan="2" >
            <widget class="QPushButton" name="botonTestNodo" >
             <property name="text" >
              <string>&amp;Probar nodo</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" colspan="3" >
-           <widget class="QProgressBar" name="progresoTest" >
-            <property name="maximum" >
-             <number>1</number>
-            </property>
-            <property name="value" >
-             <number>0</number>
-            </property>
-            <property name="format" >
-             <string>No probado</string>
             </property>
            </widget>
           </item>
@@ -140,6 +153,9 @@
              </property>
             </item>
            </widget>
+          </item>
+          <item row="0" column="2" colspan="2" >
+           <widget class="QLineEdit" name="resultadoTest" />
           </item>
          </layout>
         </widget>
@@ -236,6 +252,9 @@
           </item>
           <item row="0" column="2" >
            <widget class="QPushButton" name="botonEscribirTarjeta" >
+            <property name="enabled" >
+             <bool>false</bool>
+            </property>
             <property name="sizePolicy" >
              <sizepolicy vsizetype="Minimum" hsizetype="Minimum" >
               <horstretch>0</horstretch>
@@ -260,6 +279,56 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="1" >
+           <widget class="QLabel" name="wrongData2Write" >
+            <property name="minimumSize" >
+             <size>
+              <width>238</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="palette" >
+             <palette>
+              <active>
+               <colorrole role="WindowText" >
+                <brush brushstyle="SolidPattern" >
+                 <color alpha="255" >
+                  <red>233</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </active>
+              <inactive>
+               <colorrole role="WindowText" >
+                <brush brushstyle="SolidPattern" >
+                 <color alpha="255" >
+                  <red>233</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </inactive>
+              <disabled>
+               <colorrole role="WindowText" >
+                <brush brushstyle="SolidPattern" >
+                 <color alpha="255" >
+                  <red>119</red>
+                  <green>119</green>
+                  <blue>121</blue>
+                 </color>
+                </brush>
+               </colorrole>
+              </disabled>
+             </palette>
+            </property>
+            <property name="text" >
+             <string>Introduzca 10 digitos hexadecimales</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
@@ -273,7 +342,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>454</width>
+     <width>525</width>
      <height>29</height>
     </rect>
    </property>
