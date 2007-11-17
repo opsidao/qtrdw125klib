@@ -53,7 +53,7 @@
        <number>1</number>
       </property>
       <property name="value" >
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="format" >
        <string/>
@@ -155,7 +155,11 @@
            </widget>
           </item>
           <item row="0" column="2" colspan="2" >
-           <widget class="QLineEdit" name="resultadoTest" />
+           <widget class="QLineEdit" name="resultadoTest" >
+            <property name="alignment" >
+             <set>Qt::AlignCenter</set>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
