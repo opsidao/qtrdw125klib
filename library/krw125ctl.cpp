@@ -112,32 +112,30 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 			out.append('0');
 			out.append('0');//NA
 			out.append('0');
-			out.append('2');//CRC
-			out.append('1');
 			break;
 		case TestLinkAnswer:
 			out.append('8');//OPC
 			out.append('0');
 			out.append('0');//NA
 			out.append('0');
-			out.append('2');//CRC
-			out.append('9');
 			break;
 		case GetFirmwareVersion:
 			out.append('1');//OPC
 			out.append('1');
 			out.append('0');//NA
 			out.append('0');
-			out.append('2');//CRC
-			out.append('3');
+			break;
+		case PreRead125:
+			out.append('0');//OPC
+			out.append('5');
+			out.append('0');//NA
+			out.append('0');
 			break;
 		case Read125:
 			out.append('0');//OPC
 			out.append('1');
 			out.append('0');//NA
 			out.append('0');
-			out.append('2');//CRC
-			out.append('2');
 			break;
 		case Write125:
 			Q_ASSERT(data.size()==5);
@@ -152,24 +150,35 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 			out.append(data);
 			break;
 	}
+	int suma = 0;
+	for(int i = 0; i < out.size();i++)
+	{
+		suma+=out[i];
+	}
+	suma=(suma-3)%255;
+	QString sumaString = QString("%1").arg(suma,2,16,QLatin1Char('0'));
+	
+	out.append(sumaString);
 	out.append((char)0x03);
+	
+	qDebug() << "CRC OK:" << checkFrameCRC(out);
+	
 	return out;
 }
 
 bool KRW125ctl::checkFrameCRC(QByteArray frame)
 {
-	qDebug() << "Checking answer's CRC";
 	if (frame.size() < 6) {
 		return false;
 	}
-	int crc = 0;
-	for (int i = 1; i < frame.size()-2;i++) {
-		crc = (crc+frame.at(i))%255;
+	int suma = 0;
+	for(int i = 0; i < frame.size()-3;i++)
+	{
+		suma+=frame[i];
 	}
-	QString crcSt = QString::number(crc-12);
-	qDebug() <<"Checked crc " << crcSt;
-	return frame.indexOf(crcSt)==(frame.size()-3);
-
+	suma=(suma-3)%255;
+	QString sumaString = QString("%1").arg(suma,2,16,QLatin1Char('0'));
+	return frame.indexOf(sumaString)==(frame.size()-3);
 }
 
 // void KRW125ctl::setTimeout(int timeout)
@@ -232,14 +241,13 @@ void KRW125ctl::_readPublicModeA()
 	if (!port.isOpen()) {
 		emit readPublicModeDone(NotOpen);
 	} else {
-		QByteArray frame = generateFrame(Read125);
+		QByteArray frame = generateFrame(PreRead125);
 		port.write(frame);
-		
-		frame = port.read(12);
-		for(int i = 0; i< frame.size();i++)
-		{
-			qDebug() << "Leido: " << frame.at(i);
-		}
+		port.read(10);
+		frame = generateFrame(Read125);
+		frame = port.read(34);
+		port.flush();
+		qDebug() << frame;
 		if (frame.size() >= 6 && checkFrameCRC(frame)) {
 			if (frame.at(3) == 0x00) {
 				Q_ASSERT(frame.size() == 6);
@@ -282,17 +290,13 @@ void KRW125ctl::_writePublicModeA()
 	}
 }
 
-void KRW125ctl::readyReadSlot()
-{
-	qDebug() << "Read ready";
-}
-
 void KRW125ctl::run()
 {
+	FrameType request;
+	bool ok;
 	while(1)
 	{
-		FrameType request;
-		bool ok = false;
+		ok = false;
 		listMutex.lock();
 		if (!requestQueue.isEmpty()) {
 			request = requestQueue.dequeue();
