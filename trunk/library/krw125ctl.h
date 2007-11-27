@@ -25,6 +25,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QQueue>
+#include <QWaitCondition>
 
 #include "qextserialport.h"
 
@@ -59,6 +60,7 @@ class KRW125ctl : public QThread
 		bool isOpen();
 		void setName(QString newName);
 		void run();
+		void end();
 
 	public slots:
 		void testNodeLink();
@@ -92,6 +94,7 @@ class KRW125ctl : public QThread
 		CardType m_cardType;
 		QString m_data;
 		bool m_lock;
+		bool running;
 };
 
 #endif
