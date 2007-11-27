@@ -247,22 +247,17 @@ void KRW125ctl::_readPublicModeA()
 		frame = port.read(34);
 		port.flush();
 		if (frame.size() == 34 && checkFrameCRC(frame)) {
-			if (frame.indexOf("01810C") == 1) {
-				if (frame.at(7) == '0' && frame.at(8) == '0')
+			if (frame.indexOf("01810C00") == 1 && frame.at(7) == '0' && frame.at(8) == '0')	{
+				QByteArray readData;
+				for(int i = 10; i < frame.size()-5; i++)
 				{
-					QByteArray readData;
-					for(int i = 10; i < frame.size()-5; i++)
-					{
-						if(i%2 == 0)
-							readData.append(frame.at(i));
-					}
-					qulonglong dec = readData.toULongLong(0,16);					
-					emit readPublicModeDone(Ok,readData,QString::number(dec));
-				} else {
-					emit readPublicModeDone(OperationError);
+					if(i%2 == 0)
+						readData.append(frame.at(i));
 				}
+				qulonglong dec = readData.toULongLong(0,16);
+				emit readPublicModeDone(Ok,readData,QString::number(dec));
 			} else {
-				emit readPublicModeDone(OperationError);
+				emit readPublicModeDone(Failed);
 			}
 		} else {
 			emit readPublicModeDone(OperationError);
