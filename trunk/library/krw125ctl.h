@@ -71,7 +71,6 @@ class KRW125ctl : public QThread
 		void _getFirmwareVersion();
 		void _readPublicModeA();
 		void _writePublicModeA();
-		void readyReadSlot();
 
 	signals:
 		void testNodeLinkDone(int result);
@@ -81,7 +80,7 @@ class KRW125ctl : public QThread
 		void nodeTimeout();
 
 	protected:
-		enum FrameType {TestLink,TestLinkAnswer,GetFirmwareVersion,Read125,Write125};
+		enum FrameType {TestLink,TestLinkAnswer,GetFirmwareVersion,PreRead125,Read125,Write125};
 		
 		QByteArray generateFrame(FrameType frameType, CardType cardType=V0, QByteArray data = QByteArray(),  bool lockCard = false);
 		
