@@ -75,6 +75,8 @@ Ventana::Ventana(QWidget* parent, Qt::WFlags fl)
 
 Ventana::~Ventana()
 {
+	control.end();
+	control.wait();
 }
 
 /*$SPECIALIZATION$*/
@@ -226,7 +228,7 @@ void Ventana::slotWritePublicMode()
 	feedbackBar->setMaximum(0);
 	framePadre->setEnabled(false);
 	botonAbrirPuerto->setEnabled(false);
-	control.setData(QByteArray::fromHex(paraEscribir->text().toAscii()));
+	control.setData(paraEscribir->text().toAscii());
 	control.writePublicModeA();	
 }
 
