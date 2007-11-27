@@ -102,6 +102,7 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 {
 	//<STX><APID> <OPC><NA><ARG><CRC><ETX>
 	QByteArray out;
+	out.append((char)0x02);
 	out.append('0'); //APID, nodo 1 del concentrador
 	out.append('1');
 
@@ -235,6 +236,10 @@ void KRW125ctl::_readPublicModeA()
 		port.write(frame);
 		
 		frame = port.read(12);
+		for(int i = 0; i< frame.size();i++)
+		{
+			qDebug() << "Leido: " << frame.at(i);
+		}
 		if (frame.size() >= 6 && checkFrameCRC(frame)) {
 			if (frame.at(3) == 0x00) {
 				Q_ASSERT(frame.size() == 6);
