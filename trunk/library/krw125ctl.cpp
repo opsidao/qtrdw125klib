@@ -103,49 +103,34 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 	//<STX><APID> <OPC><NA><ARG><CRC><ETX>
 	QByteArray out;
 	out.append((char)0x02);
-	out.append('0'); //APID, nodo 1 del concentrador
-	out.append('1');
 
 	switch (frameType) {
 		case TestLink:
-			out.append('0');//OPC
-			out.append('0');
-			out.append('0');//NA
-			out.append('0');
+			out.append("010000");			
 			break;
 		case TestLinkAnswer:
-			out.append('8');//OPC
-			out.append('0');
-			out.append('0');//NA
-			out.append('0');
+			out.append("018000");			
 			break;
 		case GetFirmwareVersion:
-			out.append('1');//OPC
-			out.append('1');
-			out.append('0');//NA
-			out.append('0');
+			out.append("011100");
 			break;
 		case PreRead125:
-			out.append('0');//OPC
-			out.append('5');
-			out.append('0');//NA
-			out.append('0');
+			out.append("010500");
 			break;
 		case Read125:
-			out.append('0');//OPC
-			out.append('1');
-			out.append('0');//NA
-			out.append('0');
+			out.append("010100");
 			break;
 		case Write125:
-			Q_ASSERT(data.size()==5);
-			out.append((char)0x13);//OPC
-			out.append((char)0x07);//NA
-			out.append((char)cardType);
-			if (lockCard) {
-				out.append((char)0xFF);
+			out.append("011307");
+			if(cardType == V0) {
+				out.append("00");
 			} else {
-				out.append((char)0x00);
+				out.append("01");
+			}
+			if (lockCard) {
+				out.append("FF");
+			} else {
+				out.append("00");
 			}
 			out.append(data);
 			break;
@@ -274,7 +259,8 @@ void KRW125ctl::_writePublicModeA()
 		QByteArray frame = generateFrame(Write125,m_cardType,m_data.toAscii(),m_lock);
 		port.write(frame);
 		
-		frame = port.read(7);
+		frame = port.read(12);
+		qDebug() << "Respuesta write: " << frame;
 		if (frame.size()==7 && checkFrameCRC(frame)) {
 			if (frame.at(4) == 0x00	) {
 				emit writePublicModeDone(Ok);
