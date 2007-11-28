@@ -82,6 +82,8 @@ class KRW125ctl : public QThread
 		void nodeTimeout();
 
 	protected:
+		QByteArray portRead(int maxLength);
+		void portWrite(QByteArray data);
 		enum FrameType {TestLink,GetFirmwareVersion,PreRead125,Read125,Write125};
 		
 		QByteArray generateFrame(FrameType frameType, CardType cardType=V0, QByteArray data = QByteArray(),  bool lockCard = false);
