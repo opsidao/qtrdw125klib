@@ -82,11 +82,11 @@ class KRW125ctl : public QThread
 		void nodeTimeout();
 
 	protected:
-		enum FrameType {TestLink,TestLinkAnswer,GetFirmwareVersion,PreRead125,Read125,Write125};
+		enum FrameType {TestLink,GetFirmwareVersion,PreRead125,Read125,Write125};
 		
 		QByteArray generateFrame(FrameType frameType, CardType cardType=V0, QByteArray data = QByteArray(),  bool lockCard = false);
 		
-		bool checkFrameCRC(QByteArray frame);
+		//bool checkFrameCRC(QByteArray frame);
 		
 		QQueue<FrameType> requestQueue;
 		QMutex listMutex;
