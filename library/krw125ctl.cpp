@@ -149,33 +149,6 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 	return out;
 }
 
-//bool KRW125ctl::checkFrameCRC(QByteArray frame)
-//{
-	//if (frame.size() < 6) {
-		//return false;
-	//}
-	//int suma = 0;
-	//for(int i = 1; i < frame.size()-3;i++)
-	//{
-		//suma+=frame[i];
-	//}
-	//suma=(suma-3)%255;
-	//QString sumaString = QString("%1").arg(suma,2,16,QLatin1Char('0'));
-	//bool out = (frame.lastIndexOf(sumaString.toUpper())==(frame.size()-3));
-	//qDebug() << frame << ":" << sumaString << ":" << out;
-	//return out;
-//}
-
-// void KRW125ctl::setTimeout(int timeout)
-// {
-// 	m_timeout = timeout;
-// }
-// 
-// int KRW125ctl::timeout()
-// {
-// 	return m_timeout;
-// }
-
 void KRW125ctl::_testNodelLink()
 {
 	if (!port.isOpen()) {
@@ -183,10 +156,9 @@ void KRW125ctl::_testNodelLink()
 	}else {
 		QByteArray frame = generateFrame(TestLink),exp="0190002A";
 		port.flush();
-		port.write(frame);
-		qDebug() << "Antes del read";
-		frame=port.read(exp.size()+2  );
-		qDebug() << "Despues del read :" << frame.indexOf(exp);
+		portWrite(frame);
+		frame=portRead(exp.size()+2);
+		port.flush();
 		if (frame.indexOf(exp)==1) {
 			emit testNodeLinkDone(Ok);
 		} else {
@@ -202,8 +174,9 @@ void KRW125ctl::_getFirmwareVersion()
 	if (port.isOpen()) {
 		QByteArray frame = generateFrame(GetFirmwareVersion);
 		port.flush();
-		port.write(frame);
-		frame=port.read(14);
+		portWrite(frame);
+		frame=portRead(14);
+		port.flush();
 		QByteArray answerPrefix("019102");
 		answerPrefix.prepend((char)0x02);
 		if (frame.startsWith(answerPrefix)) {
@@ -229,33 +202,28 @@ void KRW125ctl::_readPublicModeA()
 		emit readPublicModeDone(NotOpen);
 	} else {
 		QByteArray frame = generateFrame(Read125);
-		//port.write(frame);
-		//port.read(10);
-		//frame = generateFrame(Read125);
 		port.flush();
-		port.write(frame);
-		frame = port.read(7);
-		qDebug() << "Frame0:" << frame;
-		if(frame.length() > 6 && frame[5]=='0' && frame[6]=='6') {
-			qDebug() << "Frame1:" << frame;
-			frame.append(port.read(15));
-			//qDebug() << "Frame2:" << frame;
-			//if (checkFrameCRC(frame)) {
-				qDebug() << "Frame3:" << frame;
-				if (frame.indexOf("019206") == 1) {					
+		portWrite(frame);
+		frame = portRead(7);
+		if(frame.length() == 7) {
+			if(frame[5]=='0' && frame[6]=='6') {
+				frame.append(portRead(15));
+				port.flush();
+				if (frame.indexOf("019206") == 1) {
 					QByteArray readData;
 					for(int i = 7; i < 17; i++)
 					{
-							readData.append(frame.at(i));
+						readData.append(frame.at(i));
 					}
 					qulonglong dec = readData.toULongLong(0,16);
 					emit readPublicModeDone(Ok,readData,QString::number(dec));
 				} else {
 					emit readPublicModeDone(Failed);
 				}
-			//} else {
-				//emit readPublicModeDone(OperationError);
-			//}
+			} else {
+				portRead(3);
+				emit readPublicModeDone(Failed);
+			}
 		} else {
 			emit readPublicModeDone(Failed);
 		}
@@ -269,13 +237,12 @@ void KRW125ctl::_writePublicModeA()
 	} else {
 		Q_ASSERT(m_data.size() == 10);
 		QByteArray frame = generateFrame(Write125,m_cardType,m_data.toAscii(),m_lock);
-		port.flush();		
-		port.write(frame);
+		port.flush();
+		portWrite(frame);
 		
-		frame = port.read(12);
-		qDebug() << "Respuesta write: " << frame;
+		frame = portRead(12);
 		if (frame.size()==12) {
-			if (frame.at(4) == 0x00	) {
+			if (frame.at(7) == '0' && frame.at(8) == '0') {
 				emit writePublicModeDone(Ok);
 			} else {
 				emit writePublicModeDone(Failed);
@@ -314,8 +281,8 @@ void KRW125ctl::run()
 				case Write125:
 					_writePublicModeA();
 					break;
-				case PreRead125://Satisfy the compiler
-					break;
+					case PreRead125://Satisfy the compiler
+						break;
 			}
 		} else {
 			QThread::msleep(150);
@@ -341,6 +308,21 @@ bool KRW125ctl::isOpen()
 void KRW125ctl::end()
 {
 	running = false;
+}
+
+QByteArray KRW125ctl::portRead(int maxLength)
+{
+	QByteArray out = port.read(maxLength);
+	QByteArray tmp(out);
+	qDebug() << "Read: " << tmp.replace((char)0x02,"<STX>").replace((char)0x03,"<ETX>");
+	return out;
+}
+
+void KRW125ctl::portWrite(QByteArray data)
+{
+	QByteArray tmp(data);
+	qDebug() << "Writing: " << tmp.replace((char)0x02,"<STX>").replace((char)0x03,"<ETX>");
+	port.write(data);
 }
 
 
