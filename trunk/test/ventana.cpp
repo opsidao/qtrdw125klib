@@ -169,6 +169,7 @@ void Ventana::slotGetFirmwareVersionDone(bool correct, QPair< int, int > version
 	feedbackBar->setMaximum(1);
 	feedbackBar->setValue(1);
 	framePadre->setEnabled(true);
+	botonAbrirPuerto->setEnabled(true);
 	if (correct) {
 		statusBar()->showMessage(QString::fromUtf8("Versión del firmware obtenida correctamente"),0);
 		version0->setValue(version.first);
