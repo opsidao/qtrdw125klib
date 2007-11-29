@@ -9,11 +9,11 @@ qt \
 warn_on
 QT += core \
 gui
-INCLUDEPATH += ../library
+INCLUDEPATH += ../rdw125k
 
-LIBS += ../library/liblibrary.a
+LIBS += ../rdw125k/librdw125k.a
 
-TARGETDEPS += ../library/liblibrary.a
+TARGETDEPS += ../rdw125k/librdw125k.a
 
 HEADERS += ventana.h \
 ui_ventana.h

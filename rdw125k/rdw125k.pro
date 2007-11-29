@@ -1,11 +1,11 @@
 TEMPLATE = lib
 
 CONFIG += staticlib \
-qt \
-warn_on
+	qt \
+	warn_on
 QT += core
 
 SOURCES += qextserialport.cpp \
-krw125ctl.cpp
+	qt_rdw125k.cpp
 HEADERS += qextserialport.h \
-krw125ctl.h
+	qt_rdw125k.h
