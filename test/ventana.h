@@ -38,7 +38,7 @@ class Ventana : public QMainWindow, private Ui::MainWindow
 		/*$PUBLIC_SLOTS$*/
 
 	protected:
-		KRW125ctl control;
+		Rdw125Control control;
 
 	protected slots:
 		void slotPuertoSeleccionado(const QString& seleccionado);
