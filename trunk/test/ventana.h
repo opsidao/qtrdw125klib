@@ -23,7 +23,7 @@
 
 #include <QMainWindow>
 #include "ui_ventana.h"
-#include "krw125ctl.h"
+#include "qt_rdw125k.h"
 
 class Ventana : public QMainWindow, private Ui::MainWindow
 {

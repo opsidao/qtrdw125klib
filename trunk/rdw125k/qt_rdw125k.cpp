@@ -18,7 +18,7 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "krw125ctl.h"
+#include "qt_rdw125k.h"
 #include <QTimer>
 #include <QDebug>
 #include <QMetaType>
