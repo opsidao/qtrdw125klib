@@ -95,9 +95,9 @@ void Ventana::slotUpdateCardType(const QString &value)
 {
 	statusBar()->showMessage(QString("Tipo de tarjeta cambiado a : %1").arg(value));
 	if (value=="V0") {
-		control.setCardType(KRW125ctl::V0);
+		control.setCardType(Rdw125Control::V0);
 	} else {
-		control.setCardType(KRW125ctl::V1);
+		control.setCardType(Rdw125Control::V1);
 	}
 }
 
@@ -143,13 +143,13 @@ void Ventana::slotTestNodeLinkDone(int result)
 	QString msg;
 	switch(result)
 	{
-		case KRW125ctl::Ok:
+		case Rdw125Control::Ok:
 			statusBar()->showMessage("Test del nodo correcto",0);
 			msg = "Test correcto";
 			break;
-		case KRW125ctl::Failed:
-		case KRW125ctl::NotOpen:
-		case KRW125ctl::OperationError:
+		case Rdw125Control::Failed:
+		case Rdw125Control::NotOpen:
+		case Rdw125Control::OperationError:
 			statusBar()->showMessage("Ha fallado el test del nodo",0);
 			msg = "Test incorrecto";
 	}
@@ -198,7 +198,7 @@ void Ventana::slotReadPublicModeDone(int correct, const QString & hexData, const
 	botonAbrirPuerto->setEnabled(true);
 	switch(correct)
 	{
-		case KRW125ctl::Ok:
+		case Rdw125Control::Ok:
 			statusBar()->showMessage("Tarjeta leida correctamente",0);
 			leidoHex->setText(hexData);
 			leidoDec->setText(decData);
@@ -241,7 +241,7 @@ void Ventana::slotWritePublicModeDone(int correct)
 	botonAbrirPuerto->setEnabled(true);
 	switch(correct)
 	{
-		case KRW125ctl::Ok:
+		case Rdw125Control::Ok:
 			statusBar()->showMessage("Tarjeta escrita correctamente",0);
 			break;
 		default:
