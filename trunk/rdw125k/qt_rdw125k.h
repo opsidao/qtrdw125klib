@@ -25,7 +25,7 @@
 #include <QThread>
 #include <QMutex>
 #include <QQueue>
-#include <QWaitCondition>
+#include <QSemaphore>
 
 #include "qextserialport.h"
 
@@ -92,7 +92,11 @@ class Rdw125Control : public QThread
 		
 		QQueue<FrameType> requestQueue;
 		QMutex listMutex;
+		
+		QSemaphore workingSemaphore;
+		
 		QextSerialPort port;
+		
 		CardType m_cardType;
 		QString m_data;
 		bool m_lock;

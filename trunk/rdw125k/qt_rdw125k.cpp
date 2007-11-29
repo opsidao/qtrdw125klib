@@ -24,6 +24,8 @@
 #include <QMetaType>
 #include <QMutexLocker>
 
+#define DEBUG_READ_WRITE
+
 Rdw125Control::Rdw125Control(QObject *parent)
 	: QThread(parent),m_cardType(V0),m_data(QString()),m_lock(false)
 {	
@@ -54,7 +56,7 @@ Rdw125Control::CardType Rdw125Control::cardType()
 
 void Rdw125Control::setData(const QString & data)
 {
-	m_data = data;
+	m_data = data.toUpper();
 }
 
 QString Rdw125Control::data()
@@ -76,24 +78,28 @@ void Rdw125Control::testNodeLink()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << TestLink;
+	workingSemaphore.release(1);
 }
 
 void Rdw125Control::getFirmwareVersion()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << GetFirmwareVersion;
+	workingSemaphore.release(1);
 }
 
 void Rdw125Control::readPublicModeA()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << Read125;
+	workingSemaphore.release(1);
 }
 
 void Rdw125Control::writePublicModeA()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << Write125;
+	workingSemaphore.release(1);
 }
 
 //Private implementation
@@ -134,14 +140,18 @@ QByteArray Rdw125Control::generateFrame(FrameType frameType, CardType cardType, 
 			out.append(data);
 			break;
 	}
-	int suma = 0;
+	qulonglong suma = 0;
 	for(int i = 1; i < out.size();i++)
 	{
 		suma+=out[i];
+		suma%=255;
 	}
-	suma=(suma-1)%255;
 	if (frameType == Write125)
-		suma-=2;
+		suma=(suma-3)%255;
+	else
+		suma=(suma-1)%255;
+	
+		
 	QString sumaString = QString("%1").arg(suma,2,16,QLatin1Char('0'));
 	
 	out.append(sumaString.toUpper());
@@ -260,6 +270,8 @@ void Rdw125Control::run()
 	running = true;
 	while(running)
 	{
+		qDebug() << "Acquire";
+		workingSemaphore.acquire(1);
 		ok = false;
 		listMutex.lock();
 		if (!requestQueue.isEmpty()) {
@@ -284,8 +296,6 @@ void Rdw125Control::run()
 					case PreRead125://Satisfy the compiler
 						break;
 			}
-		} else {
-			QThread::msleep(150);
 		}
 	}
 }
@@ -308,20 +318,25 @@ bool Rdw125Control::isOpen()
 void Rdw125Control::end()
 {
 	running = false;
+	workingSemaphore.release(1);
 }
 
 QByteArray Rdw125Control::portRead(int maxLength)
 {
 	QByteArray out = port.read(maxLength);
+#ifdef DEBUG_READ_WRITE
 	QByteArray tmp(out);
 	qDebug() << "Read: " << tmp.replace((char)0x02,"<STX>").replace((char)0x03,"<ETX>");
+#endif
 	return out;
 }
 
 void Rdw125Control::portWrite(QByteArray data)
 {
+#ifdef DEBUG_READ_WRITE
 	QByteArray tmp(data);
 	qDebug() << "Writing: " << tmp.replace((char)0x02,"<STX>").replace((char)0x03,"<ETX>");
+#endif
 	port.write(data);
 }
 
