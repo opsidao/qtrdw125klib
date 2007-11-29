@@ -24,73 +24,73 @@
 #include <QMetaType>
 #include <QMutexLocker>
 
-KRW125ctl::KRW125ctl(QObject *parent)
+Rdw125Control::Rdw125Control(QObject *parent)
 	: QThread(parent),m_cardType(V0),m_data(QString()),m_lock(false)
 {	
-	qRegisterMetaType<KRW125ctl::OperationResult>("KRW125ctl::OpenPortResult");
+	qRegisterMetaType<Rdw125Control::OperationResult>("Rdw125Control::OpenPortResult");
 	qRegisterMetaType<QPair<int,int> >("QPair<int,int>");
 }
 
 
-KRW125ctl::~KRW125ctl()
+Rdw125Control::~Rdw125Control()
 {
 }
 
-void KRW125ctl::close()
+void Rdw125Control::close()
 {
 	port.flush();
 	port.close();
 }
 
-void KRW125ctl::setCardType(CardType cardType)
+void Rdw125Control::setCardType(CardType cardType)
 {
 	m_cardType = cardType;
 }
 
-KRW125ctl::CardType KRW125ctl::cardType()
+Rdw125Control::CardType Rdw125Control::cardType()
 {
 	return m_cardType;
 }
 
-void KRW125ctl::setData(const QString & data)
+void Rdw125Control::setData(const QString & data)
 {
 	m_data = data;
 }
 
-QString KRW125ctl::data()
+QString Rdw125Control::data()
 {
 	return m_data;
 }
 
-bool KRW125ctl::lockCard()
+bool Rdw125Control::lockCard()
 {
 	return m_lock;
 }
 
-void KRW125ctl::setLockCard(bool lock)
+void Rdw125Control::setLockCard(bool lock)
 {
 	m_lock = lock;
 }
 
-void KRW125ctl::testNodeLink()
+void Rdw125Control::testNodeLink()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << TestLink;
 }
 
-void KRW125ctl::getFirmwareVersion()
+void Rdw125Control::getFirmwareVersion()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << GetFirmwareVersion;
 }
 
-void KRW125ctl::readPublicModeA()
+void Rdw125Control::readPublicModeA()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << Read125;
 }
 
-void KRW125ctl::writePublicModeA()
+void Rdw125Control::writePublicModeA()
 {
 	QMutexLocker lock(&listMutex);
 	requestQueue << Write125;
@@ -98,7 +98,7 @@ void KRW125ctl::writePublicModeA()
 
 //Private implementation
 
-QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByteArray data, bool lockCard)
+QByteArray Rdw125Control::generateFrame(FrameType frameType, CardType cardType, QByteArray data, bool lockCard)
 {
 	//<STX><APID> <OPC><NA><ARG><CRC><ETX>
 	QByteArray out;
@@ -149,7 +149,7 @@ QByteArray KRW125ctl::generateFrame(FrameType frameType, CardType cardType, QByt
 	return out;
 }
 
-void KRW125ctl::_testNodelLink()
+void Rdw125Control::_testNodelLink()
 {
 	if (!port.isOpen()) {
 		emit testNodeLinkDone(NotOpen);
@@ -167,7 +167,7 @@ void KRW125ctl::_testNodelLink()
 	}
 }
 
-void KRW125ctl::_getFirmwareVersion()
+void Rdw125Control::_getFirmwareVersion()
 {
 	
 	QPair<int,int> out;
@@ -196,7 +196,7 @@ void KRW125ctl::_getFirmwareVersion()
 	}	
 }
 
-void KRW125ctl::_readPublicModeA()
+void Rdw125Control::_readPublicModeA()
 {
 	if (!port.isOpen()) {
 		emit readPublicModeDone(NotOpen);
@@ -230,7 +230,7 @@ void KRW125ctl::_readPublicModeA()
 	}
 }
 
-void KRW125ctl::_writePublicModeA()
+void Rdw125Control::_writePublicModeA()
 {
 	if (!port.isOpen()) {
 		emit writePublicModeDone(NotOpen);
@@ -253,7 +253,7 @@ void KRW125ctl::_writePublicModeA()
 	}
 }
 
-void KRW125ctl::run()
+void Rdw125Control::run()
 {
 	FrameType request;
 	bool ok;
@@ -290,27 +290,27 @@ void KRW125ctl::run()
 	}
 }
 
-bool KRW125ctl::open()
+bool Rdw125Control::open()
 {
 	return port.open();
 }
 
-void KRW125ctl::setName(QString newName)
+void Rdw125Control::setName(QString newName)
 {
 	port.setName(newName);
 }
 
-bool KRW125ctl::isOpen()
+bool Rdw125Control::isOpen()
 {
 	return port.isOpen();
 }
 
-void KRW125ctl::end()
+void Rdw125Control::end()
 {
 	running = false;
 }
 
-QByteArray KRW125ctl::portRead(int maxLength)
+QByteArray Rdw125Control::portRead(int maxLength)
 {
 	QByteArray out = port.read(maxLength);
 	QByteArray tmp(out);
@@ -318,7 +318,7 @@ QByteArray KRW125ctl::portRead(int maxLength)
 	return out;
 }
 
-void KRW125ctl::portWrite(QByteArray data)
+void Rdw125Control::portWrite(QByteArray data)
 {
 	QByteArray tmp(data);
 	qDebug() << "Writing: " << tmp.replace((char)0x02,"<STX>").replace((char)0x03,"<ETX>");

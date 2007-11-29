@@ -29,7 +29,7 @@
 
 #include "qextserialport.h"
 
-class KRW125ctl : public QThread
+class Rdw125Control : public QThread
 {
 	Q_OBJECT
 	Q_ENUMS(CardType)
@@ -42,8 +42,8 @@ class KRW125ctl : public QThread
 		
 		enum CardType {V0=0x00, V1=0x01};
 
-		KRW125ctl(QObject *parent = 0);
-		~KRW125ctl();
+		Rdw125Control(QObject *parent = 0);
+		~Rdw125Control();
 
 		void close();
 
