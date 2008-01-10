@@ -24,7 +24,7 @@
 #include <QMetaType>
 #include <QMutexLocker>
 
-#define DEBUG_READ_WRITE
+#undef DEBUG_READ_WRITE
 
 Rdw125Control::Rdw125Control(QObject *parent)
 	: QThread(parent),m_cardType(V0),m_data(QString()),m_lock(false)
@@ -132,7 +132,7 @@ QByteArray Rdw125Control::generateFrame(FrameType frameType, CardType cardType, 
 			}
 			if (lockCard) {
 				//TODO Change to FF when I trust the system
-				qDebug() << "You were about to lock a card!!!";	
+				qDebug() << "You were about to lock a card!!!, I ignored your request, you should edit the source code to enable card locking (qt_rdw125k.cpp:135)";
 				out.append("00");
 			} else {
 				out.append("00");
@@ -270,7 +270,6 @@ void Rdw125Control::run()
 	running = true;
 	while(running)
 	{
-		qDebug() << "Acquire";
 		workingSemaphore.acquire(1);
 		ok = false;
 		listMutex.lock();
